@@ -1,18 +1,17 @@
 #!/bin/bash
-
-docker buildx create --use --platform=linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/adm64 --name multi-platform-builder > /dev/null
-
-docker buildx inspect --bootstrap
-
-if [ "$?" -ne 0 ]; then
-	echo "Error occured while creating multi platform builder"
-	exit 1
-fi
-
-for context in $(find . -maxdepth 1 -type d -not -name . -not -name .git); do
+for context in $(find . -maxdepth 1 -type d -not -name . -not -name .git | sort); do
 	version=$(echo "$context" | cut -c 3-)
-	echo "Building $version"
-	docker builx build -push --platform $(cat "$context/platforms") --tag "jeanned4rk/ansible:$version" "$context"
+	architectures=""
+	versiontag="jeanned4rk/ansible:$version"
+	while read arch; do
+		echo "Building $version:$arch"
+		archtag="$versiontag-$arch"
+		docker build -t "$archtag" --build-arg ARCH="$arch/" "$context"
+		docker push "$archtag"
+		architectures="${architectures} --amend $archtag"
+	done < "$context/platforms"
+	docker manifest create "$versiontag" "$architectures"
+	docker push "$versiontag"
 done
 
 exit 0

@@ -1,1 +1,5 @@
-linux/arm/v6,linux/arm/v7,linux/arm64/v8,linux/amd64
+arm64v8
+arm32v7
+arm32v6
+arm32v5
+amd64
