@@ -4,14 +4,15 @@ for context in $(find . -maxdepth 1 -type d -not -name . -not -name .git | sort)
 	architectures=""
 	versiontag="jeanned4rk/ansible:$version"
 	while read arch; do
-		echo "Building $version:$arch"
-		archtag="$versiontag-$arch"
-		docker build -t "$archtag" --build-arg ARCH="$arch/" "$context"
+		archtag="$(echo $versiontag-$(echo $arch | sed 's#/#-#g'))"
+		echo "Building $archtag" 
+		docker build -t "$archtag" --platform="linux/$arch" "$context"
 		docker push "$archtag"
 		architectures="${architectures} --amend $archtag"
-	done < "$context/platforms"
+	done < platforms
 	docker manifest create "$versiontag" "$architectures"
 	docker push "$versiontag"
+	read
 done
 
 exit 0

@@ -1,5 +1,6 @@
-arm64v8
-arm32v7
-arm32v6
-arm32v5
+arm64/v8
+arm32/v7
+arm32/v6
+arm32/v5
+386
 amd64
